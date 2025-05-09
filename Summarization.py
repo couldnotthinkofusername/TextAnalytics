@@ -2,6 +2,7 @@ import docx
 import PyPDF2 as pdf
 import pdfplumber as pdl
 import logging
+import datetime
 
 
 
@@ -18,8 +19,22 @@ class TextExtraction:
         for table in doc1.tables:
             tables.append(table.table)
         
+        #Metadata
+        properties = doc1.core_properties
+        
+        metadata = {
+                'title' : properties.title,
+                'author' : properties.author,
+                'created' : properties.created,
+                'modified' : properties.modified,
+                'keywords' : properties.keywords,
+                'extraction_date': datetime.datetime.now().strftime("%d-%m-%Y"),
+                'doc length': len(text),
+                'word_count': sum(len(word.split()) for word in text)
+                 }
+
         cleaned_text = CleanText(' '.join(text))
-        return print(cleaned_text)
+        return (cleaned_text, metadata)
         
 
             
@@ -31,10 +46,10 @@ class TextExtraction:
         for page in pdf1.pages:
             text.append(page.extract_text())
         
-        
+        metadata = pdf1.metadata
 
         cleaned_text = CleanText(' '.join(text))
-        return print(cleaned_text)
+        return (cleaned_text, metadata)
             
     def PdfReaderwithPlumber():   #PDF Extraction for large ones
     
@@ -53,8 +68,10 @@ class TextExtraction:
                     if line.strip():
                         text.append(line.strip())
         
+        metadata = pdf1.metadata
+        
         cleaned_text = CleanText(' '.join(text))
-        return print(cleaned_text)
+        return (cleaned_text, metadata)
     
 import re
 def CleanText(text):
@@ -81,7 +98,7 @@ def CleanText(text):
         return ' '.join(new_tokens)
 
 
-#D1 = TextExtraction.DocumentReader()
-#PL = TextExtraction.PdfReaderwithPlumber()
-PD2 = TextExtraction.pdfReaderwithPDF2()
+#D1 = print(TextExtraction.DocumentReader())
+#PL = print(TextExtraction.PdfReaderwithPlumber())
+#PD2 = print(TextExtraction.pdfReaderwithPDF2())
     
